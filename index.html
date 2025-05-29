@@ -29,7 +29,7 @@
 
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .header h1 {
@@ -37,6 +37,22 @@
             font-size: 2.5em;
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .version-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .version-info span {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 4px 12px;
+            border-radius: 15px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
         }
 
         .auto-save-status {
@@ -54,6 +70,46 @@
             0% { opacity: 1; }
             50% { opacity: 0.7; }
             100% { opacity: 1; }
+        }
+
+        .stats {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 2px solid #dee2e6;
+        }
+
+        .stats h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 14px;
         }
 
         .controls {
@@ -149,6 +205,10 @@
             transform: scale(1.02);
         }
 
+        .clan-card.collapsed .clan-content {
+            display: none;
+        }
+
         .clan-header {
             display: flex;
             justify-content: space-between;
@@ -193,6 +253,12 @@
             align-items: flex-end;
         }
 
+        .clan-header-buttons {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
         .member-count {
             background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
@@ -202,6 +268,23 @@
             font-size: 14px;
             min-width: 60px;
             text-align: center;
+        }
+
+        .toggle-btn {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 60px;
+        }
+
+        .toggle-btn:hover {
+            background: #138496;
+            transform: scale(1.05);
         }
 
         .delete-clan-btn {
@@ -218,6 +301,10 @@
         .delete-clan-btn:hover {
             background: #c0392b;
             transform: scale(1.05);
+        }
+
+        .clan-content {
+            transition: all 0.3s ease;
         }
 
         .leader-section {
@@ -436,44 +523,19 @@
             border-radius: 8px;
         }
 
-        .stats {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        .empty-clans {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 60px 20px;
+            background: rgba(248, 249, 250, 0.8);
             border-radius: 15px;
-            padding: 20px;
-            margin-top: 30px;
-            border: 2px solid #dee2e6;
+            border: 2px dashed #dee2e6;
         }
 
-        .stats h3 {
+        .empty-clans h3 {
             color: #2c3e50;
             margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        .stat-item {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: #6c757d;
-            font-size: 14px;
         }
 
         .modal {
@@ -594,6 +656,11 @@
                 padding: 8px 10px;
                 font-size: 13px;
             }
+
+            .version-info {
+                flex-direction: column;
+                gap: 10px;
+            }
         }
 
         /* 自定义滚动条 */
@@ -620,8 +687,26 @@
     <div class="container">
         <div class="header">
             <h1>🏰 部落联赛人员分配工具</h1>
+            <div class="version-info">
+                <span>👨‍💻 作者：老王</span>
+                <span>📋 版本：v1.0</span>
+            </div>
             <span class="auto-save-status" id="autoSaveStatus">✅ 自动保存已启用</span>
             <p>拖拽成员到不同部落，轻松管理联赛分配</p>
+        </div>
+
+        <div class="stats">
+            <h3>📊 分配统计</h3>
+            <div id="statsContainer" class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">总成员数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">部落总数</div>
+                </div>
+            </div>
         </div>
 
         <div class="controls">
@@ -633,13 +718,9 @@
         </div>
 
         <div id="clansContainer" class="clans-grid">
-            <!-- 部落卡片将在这里动态生成 -->
-        </div>
-
-        <div class="stats">
-            <h3>📊 分配统计</h3>
-            <div id="statsContainer" class="stats-grid">
-                <!-- 统计信息将在这里显示 -->
+            <div class="empty-clans">
+                <h3>📝 暂无部落数据</h3>
+                <p>点击"添加部落"创建新部落，或使用"导入文件"功能导入现有数据</p>
             </div>
         </div>
     </div>
@@ -688,34 +769,8 @@
     <input type="file" id="fileInput" accept=".xlsx,.xls,.txt" style="display: none;" onchange="handleFileUpload(event)">
 
     <script>
-        // 初始化完整数据结构（基于Excel文件的完整数据）
-        let clansData = {
-            "笙歌散尽游人去 冠军三晋级#YQRGUCQ2": {
-                name: "笙歌散尽游人去 冠军三晋级#YQRGUCQ2",
-                leader: "面包",
-                members: ["面包", "爱吃红烧肉", "Aaron", "小细狗", "清沐", "弹弹堂", "AI（老王小号）", "光明磊落", "S夜归人", "淮左名都", "喵星人（老王小号）", "炫紫之夜", "Wester", "叶凡（老王小号）", "China 暗算", "Zara", "牛奶布丁", "绝世高手", "小弩手01", "无极", "China乱世大兵", "没有理由", "张三", "战神", "大叔家的娃", "喜洋洋不灰太狼", "小弩手", "暗影独立团", "China 冷心"]
-            },
-            "染指年华 冠军三晋级 #2G2JLJOVV": {
-                name: "染指年华 冠军三晋级 #2G2JLJOVV", 
-                leader: "tru",
-                members: ["tru", "凌晨心事都是你", "NYPD", "神魂", "Johnny", "China 默运", "深雪", "心眼", "点根烟抽寂寞", "China哦买糕", "花落相思梦", "China 戈多"]
-            },
-            "KCL联邦调查局大师三 稳段#2PC92PP0": {
-                name: "KCL联邦调查局大师三 稳段#2PC92PP0",
-                leader: "阿布大王！的专属奶", 
-                members: ["阿布大王！的专属奶", "Decade", "Wheat", "Wang", "Youngever", "China i boom", "远日点", "真的栓Q", "China TE", "逆天而行"]
-            },
-            "紫色小屋大师二晋级#2YGJG8LJP": {
-                name: "紫色小屋大师二晋级#2YGJG8LJP",
-                leader: "老王安全骑",
-                members: ["老王安全骑", "风儿甚是喧嚣", "小犀牛", "丸子", "Kneel b4AT", "木槿年华追忆", "fool", "Gavroche", "Zhangjk", "万里长空"]
-            },
-            "外出名单": {
-                name: "外出名单",
-                leader: "cs圣", 
-                members: ["cs圣", "老王小号1", "老王小号2", "tru朋友以及小号"]
-            }
-        };
+        // 初始化空数据结构
+        let clansData = {};
 
         let draggedElement = null;
         let draggedMember = null;
@@ -741,8 +796,8 @@
 
         // 检查数据是否有变化
         function hasDataChanged() {
-            // 简单检查：比较当前数据与初始数据
-            return true; // 为简单起见，总是返回true
+            // 简单检查：如果有数据就返回true
+            return Object.keys(clansData).length > 0;
         }
 
         // 更新自动保存状态
@@ -754,6 +809,11 @@
 
         // 手动保存
         function manualSave() {
+            if (Object.keys(clansData).length === 0) {
+                showMessage('暂无数据可保存');
+                return;
+            }
+            
             const data = JSON.stringify(clansData, null, 2);
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
             downloadFile(data, `clan_backup_${timestamp}.json`, 'application/json');
@@ -769,6 +829,20 @@
             setTimeout(() => {
                 updateAutoSaveStatus('✅ 自动保存已启用');
             }, 2000);
+        }
+
+        // 切换部落折叠状态
+        function toggleClan(clanKey) {
+            const card = document.querySelector(`[data-clan="${clanKey}"]`);
+            const toggleBtn = card.querySelector('.toggle-btn');
+            
+            card.classList.toggle('collapsed');
+            
+            if (card.classList.contains('collapsed')) {
+                toggleBtn.textContent = '展开';
+            } else {
+                toggleBtn.textContent = '折叠';
+            }
         }
 
         // 检测重复成员
@@ -791,6 +865,17 @@
         // 渲染所有部落
         function renderClans() {
             const container = document.getElementById('clansContainer');
+            
+            if (Object.keys(clansData).length === 0) {
+                container.innerHTML = `
+                    <div class="empty-clans">
+                        <h3>📝 暂无部落数据</h3>
+                        <p>点击"添加部落"创建新部落，或使用"导入文件"功能导入现有数据</p>
+                    </div>
+                `;
+                return;
+            }
+            
             container.innerHTML = '';
 
             Object.keys(clansData).forEach(clanKey => {
@@ -848,29 +933,34 @@
                     </div>
                     <div class="clan-controls">
                         <div class="member-count">${clan.members.length}人</div>
-                        <button class="delete-clan-btn" onclick="deleteClan('${clanKey}')" title="删除部落">删除部落</button>
+                        <div class="clan-header-buttons">
+                            <button class="toggle-btn" onclick="toggleClan('${clanKey}')" title="折叠/展开部落">折叠</button>
+                            <button class="delete-clan-btn" onclick="deleteClan('${clanKey}')" title="删除部落">删除</button>
+                        </div>
                     </div>
                 </div>
-                <div class="leader-section">
-                    <div class="leader-label">👑 负责人</div>
-                    <select class="leader-select" onchange="updateLeader('${clanKey}', this.value)">
-                        ${clan.members.length > 0 ? clan.members.map(member => 
-                            `<option value="${member}" ${member === clan.leader ? 'selected' : ''}>${member}</option>`
-                        ).join('') : '<option value="">暂无成员</option>'}
-                    </select>
-                </div>
-                <div class="add-members-section">
-                    <div class="add-members-header">
-                        <div class="add-members-label">➕ 批量添加成员</div>
-                        <button class="toggle-add-btn" onclick="toggleAddMembersForm('${clanKey}')">添加</button>
+                <div class="clan-content">
+                    <div class="leader-section">
+                        <div class="leader-label">👑 负责人</div>
+                        <select class="leader-select" onchange="updateLeader('${clanKey}', this.value)">
+                            ${clan.members.length > 0 ? clan.members.map(member => 
+                                `<option value="${member}" ${member === clan.leader ? 'selected' : ''}>${member}</option>`
+                            ).join('') : '<option value="">暂无成员</option>'}
+                        </select>
                     </div>
-                    <div class="add-members-form" id="addForm-${clanKey}">
-                        <textarea class="batch-textarea" id="batchMembers-${clanKey}" placeholder="输入成员名称，用空格分隔，例如：老王安全骑 风儿甚是喧嚣 小犀牛 丸子 Kneel b4AT"></textarea>
-                        <button class="btn btn-success btn-small" onclick="batchAddMembersToClan('${clanKey}')">📋 确认添加</button>
+                    <div class="add-members-section">
+                        <div class="add-members-header">
+                            <div class="add-members-label">➕ 批量添加成员</div>
+                            <button class="toggle-add-btn" onclick="toggleAddMembersForm('${clanKey}')">添加</button>
+                        </div>
+                        <div class="add-members-form" id="addForm-${clanKey}">
+                            <textarea class="batch-textarea" id="batchMembers-${clanKey}" placeholder="输入成员名称，用空格分隔，例如：老王安全骑 风儿甚是喧嚣 小犀牛 丸子 Kneel b4AT"></textarea>
+                            <button class="btn btn-success btn-small" onclick="batchAddMembersToClan('${clanKey}')">📋 确认添加</button>
+                        </div>
                     </div>
-                </div>
-                <div class="members-container" id="members-${clanKey}">
-                    ${membersTableHTML}
+                    <div class="members-container" id="members-${clanKey}">
+                        ${membersTableHTML}
+                    </div>
                 </div>
             `;
 
@@ -1169,6 +1259,11 @@
 
         // 智能平衡
         function autoBalance() {
+            if (Object.keys(clansData).length === 0) {
+                showMessage('暂无部落数据可平衡');
+                return;
+            }
+            
             if (!confirm('智能平衡将重新分配所有成员（除外出名单），确定继续吗？')) {
                 return;
             }
@@ -1227,6 +1322,7 @@
         function updateStats() {
             const statsContainer = document.getElementById('statsContainer');
             let totalMembers = 0;
+            const totalClans = Object.keys(clansData).length;
             let statsHTML = '';
 
             Object.keys(clansData).forEach(clanKey => {
@@ -1246,6 +1342,10 @@
                 <div class="stat-item">
                     <div class="stat-number">${totalMembers}</div>
                     <div class="stat-label">总成员数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${totalClans}</div>
+                    <div class="stat-label">部落总数</div>
                 </div>
             `;
 
@@ -1373,6 +1473,10 @@
 
         // 导出功能
         function showExportModal() {
+            if (Object.keys(clansData).length === 0) {
+                showMessage('暂无数据可导出');
+                return;
+            }
             document.getElementById('exportModal').classList.add('show');
         }
 
