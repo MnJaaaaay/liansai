@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>部落联赛人员分配工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .auto-save-status {
+            display: inline-block;
+            background: #27ae60;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #27ae60, #229954);
+            color: white;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .btn-info {
+            background: linear-gradient(45deg, #17a2b8, #138496);
+            color: white;
+            box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #f39c12, #d68910);
+            color: white;
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .clans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .clan-card {
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .clan-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .clan-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .clan-card.dragover {
+            border-color: #3498db;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            transform: scale(1.02);
+        }
+
+        .clan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+            gap: 10px;
+        }
+
+        .clan-name-section {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .clan-name-input {
+            width: 100%;
+            font-weight: bold;
+            font-size: 16px;
+            color: #2c3e50;
+            border: 2px solid transparent;
+            background: transparent;
+            padding: 8px 12px;
+            border-radius: 8px;
+            line-height: 1.3;
+            resize: none;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .clan-name-input:focus {
+            outline: none;
+            border-color: #3498db;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .clan-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .member-count {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .delete-clan-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .delete-clan-btn:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+        }
+
+        .leader-section {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+
+        .leader-label {
+            font-weight: bold;
+            color: #2980b9;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .leader-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            background: white;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .leader-select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .add-members-section {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: rgba(39, 174, 96, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #27ae60;
+        }
+
+        .add-members-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .add-members-label {
+            font-weight: bold;
+            color: #27ae60;
+            font-size: 14px;
+        }
+
+        .toggle-add-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-add-btn:hover {
+            background: #229954;
+            transform: scale(1.05);
+        }
+
+        .add-members-form {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .add-members-form.show {
+            display: block;
+        }
+
+        .batch-textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 14px;
+            resize: vertical;
+            font-family: inherit;
+            margin-bottom: 10px;
+        }
+
+        .batch-textarea:focus {
+            outline: none;
+            border-color: #27ae60;
+            box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+        }
+
+        .members-container {
+            min-height: 100px;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 0;
+            background: rgba(248, 249, 250, 0.5);
+        }
+
+        .members-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .members-table th {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .members-table th:first-child {
+            width: 50px;
+            text-align: center;
+        }
+
+        .members-table th:last-child {
+            width: 80px;
+            text-align: center;
+        }
+
+        .members-table td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+
+        .members-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .members-table tr:hover {
+            background: rgba(52, 152, 219, 0.05);
+        }
+
+        .member-row {
+            cursor: move;
+            transition: background-color 0.3s ease;
+        }
+
+        .member-row.dragging {
+            opacity: 0.7;
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        .member-row.duplicate {
+            background: linear-gradient(135deg, #fee 0%, #fdd 100%);
+            color: #c0392b;
+        }
+
+        .member-row.duplicate td {
+            color: #c0392b;
+            font-weight: bold;
+        }
+
+        .member-row.leader {
+            background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+        }
+
+        .member-name-cell {
+            font-weight: 500;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .leader-badge {
+            background: #f39c12;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: #e74c3c;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .stats {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            border: 2px solid #dee2e6;
+        }
+
+        .stats h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .export-options, .add-clan-form {
+            display: grid;
+            gap: 15px;
+        }
+
+        .export-btn {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .export-btn:hover {
+            border-color: #3498db;
+            background: #f8f9fa;
+        }
+
+        .export-btn strong {
+            display: block;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .export-btn small {
+            color: #6c757d;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #6c757d;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .clans-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+
+            .members-table th,
+            .members-table td {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+        }
+
+        /* 自定义滚动条 */
+        .modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .modal-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏰 部落联赛人员分配工具</h1>
+            <span class="auto-save-status" id="autoSaveStatus">✅ 自动保存已启用</span>
+            <p>拖拽成员到不同部落，轻松管理联赛分配</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="loadFromFile()">📁 导入文件 (Excel/TXT)</button>
+            <button class="btn btn-success" onclick="showExportModal()">💾 导出分配结果</button>
+            <button class="btn btn-info" onclick="autoBalance()">⚖️ 智能平衡</button>
+            <button class="btn btn-warning" onclick="showAddClanModal()">➕ 添加部落</button>
+            <button class="btn btn-success" onclick="manualSave()">💾 手动备份</button>
+        </div>
+
+        <div id="clansContainer" class="clans-grid">
+            <!-- 部落卡片将在这里动态生成 -->
+        </div>
+
+        <div class="stats">
+            <h3>📊 分配统计</h3>
+            <div id="statsContainer" class="stats-grid">
+                <!-- 统计信息将在这里显示 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 导出模态框 -->
+    <div id="exportModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <h3>📤 导出分配结果</h3>
+            <div class="export-options">
+                <button class="export-btn" onclick="exportToJSON()">
+                    <strong>JSON格式</strong>
+                    <small>适合程序处理的数据格式</small>
+                </button>
+                <button class="export-btn" onclick="exportToCSV()">
+                    <strong>CSV格式</strong>
+                    <small>可用Excel打开的表格格式</small>
+                </button>
+                <button class="export-btn" onclick="exportToText()">
+                    <strong>文本格式</strong>
+                    <small>简洁的文本列表格式</small>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加部落模态框 -->
+    <div id="addClanModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <h3>➕ 添加新部落</h3>
+            <div class="add-clan-form">
+                <div class="form-group">
+                    <label class="form-label">部落名称</label>
+                    <input type="text" id="newClanName" class="form-input" placeholder="输入部落名称...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">负责人</label>
+                    <input type="text" id="newClanLeader" class="form-input" placeholder="输入负责人名称...">
+                </div>
+                <button class="btn btn-primary" style="width: 100%" onclick="addNewClan()">创建部落</button>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="fileInput" accept=".xlsx,.xls,.txt" style="display: none;" onchange="handleFileUpload(event)">
+
+    <script>
+        // 初始化完整数据结构（基于Excel文件的完整数据）
+        let clansData = {
+            "笙歌散尽游人去 冠军三晋级#YQRGUCQ2": {
+                name: "笙歌散尽游人去 冠军三晋级#YQRGUCQ2",
+                leader: "面包",
+                members: ["面包", "爱吃红烧肉", "Aaron", "小细狗", "清沐", "弹弹堂", "AI（老王小号）", "光明磊落", "S夜归人", "淮左名都", "喵星人（老王小号）", "炫紫之夜", "Wester", "叶凡（老王小号）", "China 暗算", "Zara", "牛奶布丁", "绝世高手", "小弩手01", "无极", "China乱世大兵", "没有理由", "张三", "战神", "大叔家的娃", "喜洋洋不灰太狼", "小弩手", "暗影独立团", "China 冷心"]
+            },
+            "染指年华 冠军三晋级 #2G2JLJOVV": {
+                name: "染指年华 冠军三晋级 #2G2JLJOVV", 
+                leader: "tru",
+                members: ["tru", "凌晨心事都是你", "NYPD", "神魂", "Johnny", "China 默运", "深雪", "心眼", "点根烟抽寂寞", "China哦买糕", "花落相思梦", "China 戈多"]
+            },
+            "KCL联邦调查局大师三 稳段#2PC92PP0": {
+                name: "KCL联邦调查局大师三 稳段#2PC92PP0",
+                leader: "阿布大王！的专属奶", 
+                members: ["阿布大王！的专属奶", "Decade", "Wheat", "Wang", "Youngever", "China i boom", "远日点", "真的栓Q", "China TE", "逆天而行"]
+            },
+            "紫色小屋大师二晋级#2YGJG8LJP": {
+                name: "紫色小屋大师二晋级#2YGJG8LJP",
+                leader: "老王安全骑",
+                members: ["老王安全骑", "风儿甚是喧嚣", "小犀牛", "丸子", "Kneel b4AT", "木槿年华追忆", "fool", "Gavroche", "Zhangjk", "万里长空"]
+            },
+            "外出名单": {
+                name: "外出名单",
+                leader: "cs圣", 
+                members: ["cs圣", "老王小号1", "老王小号2", "tru朋友以及小号"]
+            }
+        };
+
+        let draggedElement = null;
+        let draggedMember = null;
+        let sourceClan = null;
+        let autoSaveInterval = null;
+
+        // 初始化页面
+        function init() {
+            renderClans();
+            updateStats();
+            initAutoSave();
+        }
+
+        // 初始化自动保存
+        function initAutoSave() {
+            // 每30秒检查数据变化并提示保存
+            autoSaveInterval = setInterval(() => {
+                if (hasDataChanged()) {
+                    updateAutoSaveStatus('🔄 建议保存备份');
+                }
+            }, 30000);
+        }
+
+        // 检查数据是否有变化
+        function hasDataChanged() {
+            // 简单检查：比较当前数据与初始数据
+            return true; // 为简单起见，总是返回true
+        }
+
+        // 更新自动保存状态
+        function updateAutoSaveStatus(text) {
+            const status = document.getElementById('autoSaveStatus');
+            status.textContent = text;
+            status.style.background = text.includes('建议') ? '#f39c12' : '#27ae60';
+        }
+
+        // 手动保存
+        function manualSave() {
+            const data = JSON.stringify(clansData, null, 2);
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            downloadFile(data, `clan_backup_${timestamp}.json`, 'application/json');
+            updateAutoSaveStatus('✅ 已保存备份');
+            setTimeout(() => {
+                updateAutoSaveStatus('✅ 自动保存已启用');
+            }, 3000);
+        }
+
+        // 数据变更时自动触发保存提示
+        function onDataChanged() {
+            updateAutoSaveStatus('💾 数据已更新');
+            setTimeout(() => {
+                updateAutoSaveStatus('✅ 自动保存已启用');
+            }, 2000);
+        }
+
+        // 检测重复成员
+        function findDuplicateMembers() {
+            const memberCounts = {};
+            const duplicates = new Set();
+            
+            Object.keys(clansData).forEach(clanKey => {
+                clansData[clanKey].members.forEach(member => {
+                    memberCounts[member] = (memberCounts[member] || 0) + 1;
+                    if (memberCounts[member] > 1) {
+                        duplicates.add(member);
+                    }
+                });
+            });
+            
+            return duplicates;
+        }
+
+        // 渲染所有部落
+        function renderClans() {
+            const container = document.getElementById('clansContainer');
+            container.innerHTML = '';
+
+            Object.keys(clansData).forEach(clanKey => {
+                const clanCard = createClanCard(clanKey, clansData[clanKey]);
+                container.appendChild(clanCard);
+            });
+        }
+
+        // 创建部落卡片
+        function createClanCard(clanKey, clan) {
+            const card = document.createElement('div');
+            card.className = 'clan-card';
+            card.setAttribute('data-clan', clanKey);
+            
+            // 设置拖拽目标事件
+            card.addEventListener('dragover', handleDragOver);
+            card.addEventListener('drop', handleDrop);
+            card.addEventListener('dragenter', handleDragEnter);
+            card.addEventListener('dragleave', handleDragLeave);
+
+            // 获取重复成员列表
+            const duplicateMembers = findDuplicateMembers();
+
+            // 创建成员表格HTML
+            let membersTableHTML = '';
+            if (clan.members.length === 0) {
+                membersTableHTML = '<div class="empty-state">暂无成员，拖拽成员到这里或使用批量添加功能</div>';
+            } else {
+                membersTableHTML = `
+                    <table class="members-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>成员姓名</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${clan.members.map((member, index) => createMemberTableRow(
+                                member, 
+                                clanKey, 
+                                index + 1,
+                                member === clan.leader, 
+                                duplicateMembers.has(member)
+                            )).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            card.innerHTML = `
+                <div class="clan-header">
+                    <div class="clan-name-section">
+                        <textarea class="clan-name-input" onblur="updateClanName('${clanKey}', this.value)" onkeydown="handleClanNameKeydown(event, '${clanKey}')">${clan.name}</textarea>
+                    </div>
+                    <div class="clan-controls">
+                        <div class="member-count">${clan.members.length}人</div>
+                        <button class="delete-clan-btn" onclick="deleteClan('${clanKey}')" title="删除部落">删除部落</button>
+                    </div>
+                </div>
+                <div class="leader-section">
+                    <div class="leader-label">👑 负责人</div>
+                    <select class="leader-select" onchange="updateLeader('${clanKey}', this.value)">
+                        ${clan.members.length > 0 ? clan.members.map(member => 
+                            `<option value="${member}" ${member === clan.leader ? 'selected' : ''}>${member}</option>`
+                        ).join('') : '<option value="">暂无成员</option>'}
+                    </select>
+                </div>
+                <div class="add-members-section">
+                    <div class="add-members-header">
+                        <div class="add-members-label">➕ 批量添加成员</div>
+                        <button class="toggle-add-btn" onclick="toggleAddMembersForm('${clanKey}')">添加</button>
+                    </div>
+                    <div class="add-members-form" id="addForm-${clanKey}">
+                        <textarea class="batch-textarea" id="batchMembers-${clanKey}" placeholder="输入成员名称，用空格分隔，例如：老王安全骑 风儿甚是喧嚣 小犀牛 丸子 Kneel b4AT"></textarea>
+                        <button class="btn btn-success btn-small" onclick="batchAddMembersToClan('${clanKey}')">📋 确认添加</button>
+                    </div>
+                </div>
+                <div class="members-container" id="members-${clanKey}">
+                    ${membersTableHTML}
+                </div>
+            `;
+
+            return card;
+        }
+
+        // 切换添加成员表单显示
+        function toggleAddMembersForm(clanKey) {
+            const form = document.getElementById(`addForm-${clanKey}`);
+            form.classList.toggle('show');
+        }
+
+        // 批量添加成员到指定部落
+        function batchAddMembersToClan(clanKey) {
+            const textarea = document.getElementById(`batchMembers-${clanKey}`);
+            const membersText = textarea.value.trim();
+
+            if (!membersText) {
+                alert('请输入成员名称');
+                return;
+            }
+
+            // 按空格分割成员名称
+            const memberNames = membersText.split(/\s+/).filter(name => name.trim() !== '');
+            
+            if (memberNames.length === 0) {
+                alert('没有有效的成员名称');
+                return;
+            }
+
+            let addedCount = 0;
+            let duplicateCount = 0;
+            let duplicateNames = [];
+
+            // 检查现有成员
+            const allExistingMembers = new Set();
+            Object.keys(clansData).forEach(key => {
+                clansData[key].members.forEach(member => {
+                    allExistingMembers.add(member);
+                });
+            });
+
+            memberNames.forEach(memberName => {
+                const trimmedName = memberName.trim();
+                if (trimmedName) {
+                    if (allExistingMembers.has(trimmedName)) {
+                        duplicateCount++;
+                        duplicateNames.push(trimmedName);
+                    } else {
+                        clansData[clanKey].members.push(trimmedName);
+                        allExistingMembers.add(trimmedName);
+                        addedCount++;
+                    }
+                }
+            });
+
+            // 如果这是部落的第一批成员，设置第一个为负责人
+            if (clansData[clanKey].members.length === addedCount && addedCount > 0 && !clansData[clanKey].leader) {
+                clansData[clanKey].leader = clansData[clanKey].members[0];
+            }
+
+            // 清空输入
+            textarea.value = '';
+            toggleAddMembersForm(clanKey);
+
+            // 重新渲染
+            renderClans();
+            updateStats();
+            onDataChanged();
+
+            // 显示结果消息
+            let message = `批量添加完成！成功添加 ${addedCount} 人到 ${clansData[clanKey].name}`;
+            if (duplicateCount > 0) {
+                message += `\n跳过 ${duplicateCount} 个重复成员: ${duplicateNames.join(', ')}`;
+            }
+            showMessage(message);
+        }
+
+        // 创建成员表格行
+        function createMemberTableRow(memberName, clanKey, index, isLeader = false, isDuplicate = false) {
+            return `
+                <tr class="member-row ${isLeader ? 'leader' : ''} ${isDuplicate ? 'duplicate' : ''}" 
+                    draggable="true" 
+                    data-member="${memberName}" 
+                    data-clan="${clanKey}"
+                    title="${isDuplicate ? '⚠️ 重复成员' : ''}">
+                    <td style="text-align: center; font-weight: bold; color: #667eea;">${index}</td>
+                    <td>
+                        <div class="member-name-cell">
+                            ${memberName}
+                            ${isLeader ? '<span class="leader-badge">首领</span>' : ''}
+                        </div>
+                    </td>
+                    <td style="text-align: center;">
+                        <button class="delete-btn" onclick="removeMember('${clanKey}', '${memberName}')" title="删除成员">
+                            ×
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // 处理部落名称编辑
+        function handleClanNameKeydown(event, clanKey) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                updateClanName(clanKey, event.target.value);
+                event.target.blur();
+            }
+        }
+
+        function updateClanName(clanKey, newName) {
+            const trimmedName = newName.trim();
+            if (trimmedName && trimmedName !== clansData[clanKey].name) {
+                clansData[clanKey].name = trimmedName;
+                onDataChanged();
+                showMessage(`部落名称已更新为: ${trimmedName}`);
+            }
+        }
+
+        // 更新负责人
+        function updateLeader(clanKey, newLeader) {
+            if (newLeader && clansData[clanKey].members.includes(newLeader)) {
+                clansData[clanKey].leader = newLeader;
+                renderClans();
+                onDataChanged();
+                showMessage(`${clansData[clanKey].name} 的负责人已更新为: ${newLeader}`);
+            }
+        }
+
+        // 添加新部落
+        function showAddClanModal() {
+            document.getElementById('addClanModal').classList.add('show');
+        }
+
+        function addNewClan() {
+            const nameInput = document.getElementById('newClanName');
+            const leaderInput = document.getElementById('newClanLeader');
+            const clanName = nameInput.value.trim();
+            const leaderName = leaderInput.value.trim();
+
+            if (!clanName) {
+                alert('请输入部落名称');
+                return;
+            }
+
+            if (!leaderName) {
+                alert('请输入负责人名称');
+                return;
+            }
+
+            // 检查部落名称是否已存在
+            if (Object.values(clansData).some(clan => clan.name === clanName)) {
+                alert('部落名称已存在');
+                return;
+            }
+
+            // 创建唯一的key
+            const clanKey = `clan_${Date.now()}`;
+            
+            // 添加新部落
+            clansData[clanKey] = {
+                name: clanName,
+                leader: leaderName,
+                members: [leaderName]
+            };
+
+            // 清空输入
+            nameInput.value = '';
+            leaderInput.value = '';
+            
+            // 关闭模态框
+            closeModal();
+            
+            // 重新渲染
+            renderClans();
+            updateStats();
+            onDataChanged();
+            
+            showMessage(`成功创建部落: ${clanName}`);
+        }
+
+        // 删除部落
+        function deleteClan(clanKey) {
+            const clan = clansData[clanKey];
+            if (confirm(`确定要删除部落 "${clan.name}" 吗？\n\n注意：该部落的所有成员将被移除！`)) {
+                delete clansData[clanKey];
+                renderClans();
+                updateStats();
+                onDataChanged();
+                showMessage(`已删除部落: ${clan.name}`);
+            }
+        }
+
+        // 拖拽事件处理
+        document.addEventListener('dragstart', function(e) {
+            if (e.target.classList.contains('member-row')) {
+                draggedElement = e.target;
+                draggedMember = e.target.getAttribute('data-member');
+                sourceClan = e.target.getAttribute('data-clan');
+                e.target.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            }
+        });
+
+        document.addEventListener('dragend', function(e) {
+            if (e.target.classList.contains('member-row')) {
+                e.target.classList.remove('dragging');
+                document.querySelectorAll('.clan-card').forEach(card => {
+                    card.classList.remove('dragover');
+                });
+            }
+        });
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            if (draggedElement) {
+                e.currentTarget.classList.add('dragover');
+            }
+        }
+
+        function handleDragLeave(e) {
+            if (!e.currentTarget.contains(e.relatedTarget)) {
+                e.currentTarget.classList.remove('dragover');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const targetClan = e.currentTarget.getAttribute('data-clan');
+            
+            if (draggedMember && sourceClan && targetClan !== sourceClan) {
+                // 从源部落移除成员
+                const sourceIndex = clansData[sourceClan].members.indexOf(draggedMember);
+                if (sourceIndex > -1) {
+                    clansData[sourceClan].members.splice(sourceIndex, 1);
+                    
+                    // 如果移除的是负责人，需要选择新的负责人
+                    if (clansData[sourceClan].leader === draggedMember) {
+                        if (clansData[sourceClan].members.length > 0) {
+                            clansData[sourceClan].leader = clansData[sourceClan].members[0];
+                        } else {
+                            clansData[sourceClan].leader = '';
+                        }
+                    }
+                }
+                
+                // 添加到目标部落
+                if (!clansData[targetClan].members.includes(draggedMember)) {
+                    clansData[targetClan].members.push(draggedMember);
+                }
+                
+                // 重新渲染
+                renderClans();
+                updateStats();
+                onDataChanged();
+                
+                // 显示成功消息
+                showMessage(`成功将 ${draggedMember} 从 ${clansData[sourceClan].name} 移动到 ${clansData[targetClan].name}`);
+            }
+            
+            e.currentTarget.classList.remove('dragover');
+            draggedElement = null;
+            draggedMember = null;
+            sourceClan = null;
+        }
+
+        // 删除成员
+        function removeMember(clanKey, memberName) {
+            if (confirm(`确定要删除成员 ${memberName} 吗？`)) {
+                const index = clansData[clanKey].members.indexOf(memberName);
+                if (index > -1) {
+                    clansData[clanKey].members.splice(index, 1);
+                    
+                    // 如果删除的是负责人，需要选择新的负责人
+                    if (clansData[clanKey].leader === memberName) {
+                        if (clansData[clanKey].members.length > 0) {
+                            clansData[clanKey].leader = clansData[clanKey].members[0];
+                        } else {
+                            clansData[clanKey].leader = '';
+                        }
+                    }
+                    
+                    renderClans();
+                    updateStats();
+                    onDataChanged();
+                    showMessage(`已删除成员 ${memberName}`);
+                }
+            }
+        }
+
+        // 智能平衡
+        function autoBalance() {
+            if (!confirm('智能平衡将重新分配所有成员（除外出名单），确定继续吗？')) {
+                return;
+            }
+
+            // 收集所有非外出名单的成员
+            let allMembers = [];
+            const excludeClan = '外出名单';
+            const leaders = {};
+            
+            Object.keys(clansData).forEach(clanKey => {
+                if (clanKey !== excludeClan && clansData[clanKey].name !== excludeClan) {
+                    leaders[clanKey] = clansData[clanKey].leader;
+                    allMembers = allMembers.concat(clansData[clanKey].members);
+                    clansData[clanKey].members = [];
+                }
+            });
+
+            // 打乱数组
+            for (let i = allMembers.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allMembers[i], allMembers[j]] = [allMembers[j], allMembers[i]];
+            }
+
+            // 获取非外出名单的部落
+            const activeClanKeys = Object.keys(clansData).filter(key => 
+                key !== excludeClan && clansData[key].name !== excludeClan
+            );
+            
+            // 平均分配
+            allMembers.forEach((member, index) => {
+                const clanIndex = index % activeClanKeys.length;
+                const clanKey = activeClanKeys[clanIndex];
+                clansData[clanKey].members.push(member);
+            });
+
+            // 确保每个部落都有负责人
+            activeClanKeys.forEach(clanKey => {
+                if (clansData[clanKey].members.length > 0) {
+                    // 如果原负责人还在这个部落，保持不变
+                    if (clansData[clanKey].members.includes(leaders[clanKey])) {
+                        clansData[clanKey].leader = leaders[clanKey];
+                    } else {
+                        // 否则选择第一个成员作为负责人
+                        clansData[clanKey].leader = clansData[clanKey].members[0];
+                    }
+                }
+            });
+
+            renderClans();
+            updateStats();
+            onDataChanged();
+            showMessage('智能平衡完成！');
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            const statsContainer = document.getElementById('statsContainer');
+            let totalMembers = 0;
+            let statsHTML = '';
+
+            Object.keys(clansData).forEach(clanKey => {
+                const clan = clansData[clanKey];
+                totalMembers += clan.members.length;
+                
+                statsHTML += `
+                    <div class="stat-item">
+                        <div class="stat-number">${clan.members.length}</div>
+                        <div class="stat-label">${clan.name.length > 20 ? clan.name.substring(0, 20) + '...' : clan.name}</div>
+                    </div>
+                `;
+            });
+
+            // 添加总计
+            statsHTML += `
+                <div class="stat-item">
+                    <div class="stat-number">${totalMembers}</div>
+                    <div class="stat-label">总成员数</div>
+                </div>
+            `;
+
+            statsContainer.innerHTML = statsHTML;
+        }
+
+        // 文件导入
+        function loadFromFile() {
+            document.getElementById('fileInput').click();
+        }
+
+        // 解析TXT文件
+        function parseTxtFile(content) {
+            const lines = content.split('\n').map(line => line.trim()).filter(line => line);
+            const newClansData = {};
+            let currentClan = null;
+            let currentClanKey = null;
+            let isReadingMembers = false;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                
+                // 跳过标题和分隔符
+                if (line === '部落联赛人员分配' || line.startsWith('=')) {
+                    continue;
+                }
+                
+                // 检查是否是负责人行
+                if (line.startsWith('负责人：')) {
+                    const leader = line.replace('负责人：', '').trim();
+                    if (currentClan) {
+                        currentClan.leader = leader;
+                    }
+                    continue;
+                }
+                
+                // 检查是否是成员数行
+                if (line.startsWith('成员数：')) {
+                    continue;
+                }
+                
+                // 检查是否是成员列表标题
+                if (line === '成员列表：') {
+                    isReadingMembers = true;
+                    continue;
+                }
+                
+                // 如果当前行以数字开头，说明是成员
+                if (isReadingMembers && /^\d+\./.test(line)) {
+                    const memberMatch = line.match(/^\d+\.\s*(.+?)(?:\s*\(负责人\))?$/);
+                    if (memberMatch && currentClan) {
+                        const memberName = memberMatch[1].trim();
+                        currentClan.members.push(memberName);
+                    }
+                    continue;
+                }
+                
+                // 如果不是成员行，且不为空，说明是新的部落名称
+                if (line && !isReadingMembers) {
+                    // 创建新部落
+                    currentClanKey = `clan_${Date.now()}_${Object.keys(newClansData).length}`;
+                    currentClan = {
+                        name: line,
+                        leader: '',
+                        members: []
+                    };
+                    newClansData[currentClanKey] = currentClan;
+                    isReadingMembers = false;
+                } else if (line && !line.startsWith('负责人：') && !line.startsWith('成员数：') && line !== '成员列表：') {
+                    // 遇到新的部落名称
+                    currentClanKey = `clan_${Date.now()}_${Object.keys(newClansData).length}`;
+                    currentClan = {
+                        name: line,
+                        leader: '',
+                        members: []
+                    };
+                    newClansData[currentClanKey] = currentClan;
+                    isReadingMembers = false;
+                }
+            }
+            
+            return newClansData;
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const fileName = file.name.toLowerCase();
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    if (fileName.endsWith('.txt')) {
+                        // 处理TXT文件
+                        const content = e.target.result;
+                        const parsedData = parseTxtFile(content);
+                        
+                        if (Object.keys(parsedData).length > 0) {
+                            if (confirm('确定要用新数据替换当前数据吗？这将清除现有的所有部落信息。')) {
+                                clansData = parsedData;
+                                renderClans();
+                                updateStats();
+                                onDataChanged();
+                                showMessage(`成功导入 ${Object.keys(parsedData).length} 个部落的数据！`);
+                            }
+                        } else {
+                            alert('未能解析到有效的部落数据，请检查文件格式。');
+                        }
+                    } else {
+                        // Excel文件处理（暂时显示提示）
+                        showMessage('Excel文件导入功能开发中，请使用TXT格式文件或联系开发者。');
+                    }
+                } catch (error) {
+                    alert('文件解析失败：' + error.message);
+                }
+            };
+            
+            if (fileName.endsWith('.txt')) {
+                reader.readAsText(file, 'UTF-8');
+            } else {
+                reader.readAsArrayBuffer(file);
+            }
+        }
+
+        // 导出功能
+        function showExportModal() {
+            document.getElementById('exportModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.remove('show');
+            });
+        }
+
+        function exportToJSON() {
+            const data = JSON.stringify(clansData, null, 2);
+            downloadFile(data, 'clan_allocation.json', 'application/json');
+            closeModal();
+        }
+
+        function exportToCSV() {
+            let csv = '部落名称,负责人,成员数,成员列表\n';
+            
+            Object.keys(clansData).forEach(clanKey => {
+                const clan = clansData[clanKey];
+                const members = clan.members.join(';');
+                csv += `"${clan.name}","${clan.leader}","${clan.members.length}","${members}"\n`;
+            });
+
+            downloadFile(csv, 'clan_allocation.csv', 'text/csv');
+            closeModal();
+        }
+
+        function exportToText() {
+            let text = '部落联赛人员分配\n';
+            text += '==================\n\n';
+
+            Object.keys(clansData).forEach(clanKey => {
+                const clan = clansData[clanKey];
+                text += `${clan.name}\n`;
+                text += `负责人：${clan.leader}\n`;
+                text += `成员数：${clan.members.length}\n`;
+                text += '成员列表：\n';
+                clan.members.forEach((member, index) => {
+                    const isLeader = member === clan.leader ? ' (负责人)' : '';
+                    text += `  ${index + 1}. ${member}${isLeader}\n`;
+                });
+                text += '\n';
+            });
+
+            downloadFile(text, 'clan_allocation.txt', 'text/plain');
+            closeModal();
+        }
+
+        function downloadFile(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showMessage(`${filename} 下载成功！`);
+        }
+
+        // 显示消息
+        function showMessage(message) {
+            // 创建简单的消息提示
+            const msgDiv = document.createElement('div');
+            msgDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #4CAF50;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 25px;
+                z-index: 3000;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+                font-weight: bold;
+                animation: slideIn 0.3s ease;
+                max-width: 300px;
+                word-wrap: break-word;
+            `;
+            msgDiv.textContent = message;
+            
+            // 添加动画
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            if (!document.querySelector('style[data-animation]')) {
+                style.setAttribute('data-animation', 'true');
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(msgDiv);
+            
+            setTimeout(() => {
+                msgDiv.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => {
+                    if (msgDiv.parentNode) {
+                        msgDiv.parentNode.removeChild(msgDiv);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                if (document.getElementById('newClanName') === document.activeElement || 
+                    document.getElementById('newClanLeader') === document.activeElement) {
+                    addNewClan();
+                }
+            }
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // 页面加载完成后初始化
+        window.addEventListener('load', init);
+
+        // 页面卸载前清理定时器
+        window.addEventListener('beforeunload', () => {
+            if (autoSaveInterval) {
+                clearInterval(autoSaveInterval);
+            }
+        });
+    </script>
+</body>
+</html>
